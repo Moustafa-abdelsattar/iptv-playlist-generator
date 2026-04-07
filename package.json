@@ -1,0 +1,13 @@
+{
+  "name": "iptv-playlist-generator",
+  "version": "1.0.0",
+  "description": "Generate M3U playlists from Xtream Codes IPTV servers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0"
+  }
+}

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPTV Playlist Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0a0e17;
+      color: #e0e6ed;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6b7b8d;
+      margin-bottom: 40px;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #131a2b;
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      border: 1px solid #1e2a3a;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #8b9dc3;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h2 .icon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      color: #8b9dc3;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #2a3548;
+      border-radius: 10px;
+      background: #0d1321;
+      color: #e0e6ed;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input:focus { border-color: #667eea; }
+    input::placeholder { color: #3d4f65; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: #1e2a3a;
+      color: #8b9dc3;
+      border: 1px solid #2a3548;
+    }
+
+    .btn-secondary:hover { background: #253347; }
+
+    .status {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status.info { display: block; background: #1a2744; border: 1px solid #2a4066; color: #7db3f7; }
+    .status.success { display: block; background: #1a3a2a; border: 1px solid #2a5540; color: #7df7a5; }
+    .status.error { display: block; background: #3a1a1a; border: 1px solid #552a2a; color: #f77d7d; }
+
+    .server-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .info-item {
+      background: #0d1321;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #1e2a3a;
+    }
+
+    .info-label { font-size: 0.75rem; color: #6b7b8d; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-value { font-size: 1rem; color: #e0e6ed; margin-top: 4px; font-weight: 600; }
+
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .categories-grid::-webkit-scrollbar { width: 6px; }
+    .categories-grid::-webkit-scrollbar-track { background: #0d1321; border-radius: 3px; }
+    .categories-grid::-webkit-scrollbar-thumb { background: #2a3548; border-radius: 3px; }
+
+    .cat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #0d1321;
+      border-radius: 8px;
+      border: 1px solid #1e2a3a;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: border-color 0.2s;
+    }
+
+    .cat-item:hover { border-color: #667eea; }
+    .cat-item input { accent-color: #667eea; }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #1e2a3a;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .progress-bar.active { display: block; }
+
+    .progress-bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 3px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    .hidden { display: none !important; }
+
+    .playlist-cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .playlist-card {
+      background: #0d1321;
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid #1e2a3a;
+    }
+
+    .playlist-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .playlist-card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .playlist-card-title.live { color: #f77d7d; }
+    .playlist-card-title.vod { color: #7db3f7; }
+    .playlist-card-title.series { color: #f7c97d; }
+
+    .playlist-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .playlist-badge.live { background: rgba(247,125,125,0.15); color: #f77d7d; }
+    .playlist-badge.vod { background: rgba(125,179,247,0.15); color: #7db3f7; }
+    .playlist-badge.series { background: rgba(247,201,125,0.15); color: #f7c97d; }
+
+    .playlist-stats {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+
+    .playlist-stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #e0e6ed;
+    }
+
+    .playlist-stat-label {
+      font-size: 0.7rem;
+      color: #6b7b8d;
+      text-transform: uppercase;
+    }
+
+    .playlist-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-download {
+      flex: 1;
+      justify-content: center;
+      font-size: 0.9rem;
+      padding: 10px 16px;
+      color: #0a0e17;
+      font-weight: 700;
+    }
+
+    .btn-download.live { background: linear-gradient(135deg, #f77d7d, #e44d4d); }
+    .btn-download.vod { background: linear-gradient(135deg, #7db3f7, #4d8de4); }
+    .btn-download.series { background: linear-gradient(135deg, #f7c97d, #e4a44d); }
+
+    .btn-download:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-copy {
+      padding: 10px 16px;
+      background: #1e2a3a;
+      color: #8b9dc3;
+      border: 1px solid #2a3548;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover { background: #253347; }
+
+    .preview-box {
+      background: #080c14;
+      border: 1px solid #1e2a3a;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 180px;
+      overflow: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #6b7b8d;
+      white-space: pre;
+      margin-top: 12px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .container { padding: 20px 12px; }
+      h1 { font-size: 1.5rem; }
+      .playlist-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>IPTV Playlist Generator</h1>
+    <p class="subtitle">Connect to your IPTV server and generate M3U playlists</p>
+
+    <!-- Connection Card -->
+    <div class="card">
+      <h2><span class="icon"></span> Server Connection</h2>
+      <div class="form-group">
+        <label>Server URL</label>
+        <input type="text" id="serverUrl" placeholder="http://yourserver.com:port">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="Enter username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Enter password">
+        </div>
+      </div>
+      <button class="btn btn-primary" id="connectBtn" onclick="connect()">
+        Connect to Server
+      </button>
+      <div id="connectStatus" class="status"></div>
+      <div id="serverInfo" class="server-info hidden"></div>
+    </div>
+
+    <!-- Options Card -->
+    <div class="card hidden" id="optionsCard">
+      <h2><span class="icon"></span> Playlist Options</h2>
+
+      <label>Categories <span id="catCount" style="color:#667eea"></span></label>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="selectAllCats()">Select All</button>
+        <button class="btn btn-secondary" onclick="deselectAllCats()">Deselect All</button>
+      </div>
+      <div class="categories-grid" id="categoriesGrid"></div>
+
+      <button class="btn btn-primary" id="generateBtn" onclick="generatePlaylists()" style="margin-top: 20px;">
+        Generate All Playlists
+      </button>
+      <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+      <div id="generateStatus" class="status"></div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card hidden" id="resultCard">
+      <h2><span class="icon"></span> Your Playlists</h2>
+      <div class="playlist-cards" id="playlistCards"></div>
+    </div>
+  </div>
+
+  <script>
+    let playlists = { live: null, vod: null, series: null };
+    let serverHostname = '';
+
+    function esc(str) {
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    function el(tag, attrs, children) {
+      const node = document.createElement(tag);
+      if (attrs) {
+        for (const [k, v] of Object.entries(attrs)) {
+          if (k === 'className') node.className = v;
+          else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
+          else node.setAttribute(k, v);
+        }
+      }
+      if (typeof children === 'string') node.textContent = children;
+      else if (Array.isArray(children)) children.forEach(c => { if (c) node.appendChild(c); });
+      else if (children instanceof Node) node.appendChild(children);
+      return node;
+    }
+
+    async function apiCall(endpoint, body) {
+      const res = await fetch('/api/' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error + (err.details ? ': ' + err.details : ''));
+      }
+      return res.json();
+    }
+
+    function getCredentials() {
+      return {
+        serverUrl: document.getElementById('serverUrl').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value.trim()
+      };
+    }
+
+    function setStatus(id, type, msg) {
+      const statusEl = document.getElementById(id);
+      statusEl.className = 'status ' + type;
+      statusEl.textContent = msg;
+    }
+
+    function buildInfoItem(label, value) {
+      return el('div', { className: 'info-item' }, [
+        el('div', { className: 'info-label' }, label),
+        el('div', { className: 'info-value' }, value)
+      ]);
+    }
+
+    async function connect() {
+      const creds = getCredentials();
+      if (!creds.serverUrl || !creds.username || !creds.password) {
+        setStatus('connectStatus', 'error', 'Please fill in all fields');
+        return;
+      }
+
+      const btn = document.getElementById('connectBtn');
+      btn.disabled = true;
+      btn.textContent = '';
+      btn.appendChild(el('span', { className: 'spinner' }));
+      btn.appendChild(document.createTextNode(' Connecting...'));
+      setStatus('connectStatus', 'info', 'Connecting to server...');
+
+      try {
+        const data = await apiCall('authenticate', creds);
+
+        if (data.user_info && data.user_info.auth === 1) {
+          setStatus('connectStatus', 'success', 'Connected successfully!');
+          serverHostname = (data.server_info && data.server_info.url) || new URL(creds.serverUrl).hostname;
+
+          const info = data.user_info;
+          const serverInfo = document.getElementById('serverInfo');
+          serverInfo.classList.remove('hidden');
+          serverInfo.replaceChildren(
+            buildInfoItem('Status', String(info.status || 'Unknown')),
+            buildInfoItem('Expires', info.exp_date ? new Date(info.exp_date * 1000).toLocaleDateString() : 'N/A'),
+            buildInfoItem('Connections', (info.active_cons || 0) + ' / ' + (info.max_connections || 'N/A')),
+            buildInfoItem('Username', String(info.username || creds.username))
+          );
+
+          document.getElementById('optionsCard').classList.remove('hidden');
+          await loadCategories();
+        } else {
+          setStatus('connectStatus', 'error', 'Authentication failed. Check your credentials.');
+        }
+      } catch (err) {
+        setStatus('connectStatus', 'error', err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Connect to Server';
+    }
+
+    async function loadCategories() {
+      const creds = getCredentials();
+      const grid = document.getElementById('categoriesGrid');
+      grid.replaceChildren(el('p', { style: 'color:#6b7b8d' }, 'Loading categories...'));
+
+      try {
+        const results = await Promise.all([
+          apiCall('live-categories', creds).catch(() => []),
+          apiCall('vod-categories', creds).catch(() => []),
+          apiCall('series-categories', creds).catch(() => [])
+        ]);
+
+        const allCategories = [
+          ...(results[0] || []).map(c => ({ ...c, type: 'live' })),
+          ...(results[1] || []).map(c => ({ ...c, type: 'vod' })),
+          ...(results[2] || []).map(c => ({ ...c, type: 'series' }))
+        ];
+
+        document.getElementById('catCount').textContent = '(' + allCategories.length + ' found)';
+
+        if (allCategories.length === 0) {
+          grid.replaceChildren(el('p', { style: 'color:#6b7b8d' }, 'No categories found'));
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        allCategories.forEach(cat => {
+          const checkbox = el('input', { type: 'checkbox', value: String(cat.category_id) });
+          checkbox.checked = true;
+          const label = el('label', { className: 'cat-item' }, [
+            checkbox,
+            document.createTextNode(' ' + String(cat.category_name || ''))
+          ]);
+          fragment.appendChild(label);
+        });
+        grid.replaceChildren(fragment);
+      } catch (err) {
+        grid.replaceChildren(el('p', { style: 'color:#f77d7d' }, 'Error: ' + err.message));
+      }
+    }
+
+    function selectAllCats() {
+      document.querySelectorAll('#categoriesGrid input[type="checkbox"]').forEach(cb => cb.checked = true);
+    }
+
+    function deselectAllCats() {
+      document.querySelectorAll('#categoriesGrid input[type="checkbox"]').forEach(cb => cb.checked = false);
+    }
+
+    function getTimestamp() {
+      const now = new Date();
+      return now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0');
+    }
+
+    function downloadFile(content, filename) {
+      const blob = new Blob([content], { type: 'audio/x-mpegurl' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function copyToClipboard(text, statusMsg) {
+      navigator.clipboard.writeText(text).then(() => {
+        setStatus('generateStatus', 'success', statusMsg);
+      });
+    }
+
+    function buildPlaylistCard(type, label, data) {
+      if (!data || data.count === 0) return null;
+
+      const colorClass = type;
+      const timestamp = getTimestamp();
+      const user = getCredentials().username;
+      const filename = serverHostname + '_' + user + '_' + label.replace(/\s+/g, '-') + '_' + timestamp + '.m3u';
+      const fileSize = (new Blob([data.playlist]).size / 1024).toFixed(1);
+      const previewLines = data.playlist.split('\n').slice(0, 20).join('\n');
+
+      const card = el('div', { className: 'playlist-card' }, [
+        el('div', { className: 'playlist-card-header' }, [
+          el('div', { className: 'playlist-card-title ' + colorClass }, label),
+          el('span', { className: 'playlist-badge ' + colorClass }, data.count + ' channels')
+        ]),
+        el('div', { className: 'playlist-stats' }, [
+          el('div', {}, [
+            el('div', { className: 'playlist-stat-number' }, String(data.count)),
+            el('div', { className: 'playlist-stat-label' }, 'Channels')
+          ]),
+          el('div', {}, [
+            el('div', { className: 'playlist-stat-number' }, fileSize + ' KB'),
+            el('div', { className: 'playlist-stat-label' }, 'File Size')
+          ])
+        ]),
+        el('div', {}, [
+          el('div', { className: 'playlist-stat-label', style: 'margin-bottom:4px;color:#8b9dc3' }, filename)
+        ]),
+        el('div', { className: 'playlist-actions' }, [
+          el('button', {
+            className: 'btn btn-download ' + colorClass,
+            onclick: function() { downloadFile(data.playlist, filename); }
+          }, 'Download ' + label),
+          el('button', {
+            className: 'btn-copy',
+            onclick: function() { copyToClipboard(data.playlist, label + ' playlist copied!'); }
+          }, 'Copy')
+        ])
+      ]);
+
+      const preview = el('div', { className: 'preview-box' });
+      preview.textContent = previewLines + (data.playlist.split('\n').length > 20 ? '\n...' : '');
+      card.appendChild(preview);
+
+      return card;
+    }
+
+    async function generatePlaylists() {
+      const creds = getCredentials();
+      const selectedCats = Array.from(document.querySelectorAll('#categoriesGrid input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      btn.textContent = '';
+      btn.appendChild(el('span', { className: 'spinner' }));
+      btn.appendChild(document.createTextNode(' Generating all playlists...'));
+
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+      progressBar.classList.add('active');
+      progressFill.style.width = '10%';
+
+      setStatus('generateStatus', 'info', 'Fetching Live TV, Movies and Series... This may take a moment.');
+
+      try {
+        progressFill.style.width = '30%';
+
+        const result = await apiCall('generate-playlists', {
+          ...creds,
+          selectedCategories: selectedCats
+        });
+
+        progressFill.style.width = '100%';
+
+        playlists = result;
+
+        const totalCount = (result.live ? result.live.count : 0) +
+                           (result.vod ? result.vod.count : 0) +
+                           (result.series ? result.series.count : 0);
+
+        setStatus('generateStatus', 'success', 'Generated ' + totalCount + ' total channels across all playlists!');
+
+        const resultCard = document.getElementById('resultCard');
+        resultCard.classList.remove('hidden');
+
+        const cardsContainer = document.getElementById('playlistCards');
+        const fragment = document.createDocumentFragment();
+
+        const liveCard = buildPlaylistCard('live', 'Live TV', result.live);
+        const vodCard = buildPlaylistCard('vod', 'Movies', result.vod);
+        const seriesCard = buildPlaylistCard('series', 'Series', result.series);
+
+        if (liveCard) fragment.appendChild(liveCard);
+        if (vodCard) fragment.appendChild(vodCard);
+        if (seriesCard) fragment.appendChild(seriesCard);
+
+        if (!liveCard && !vodCard && !seriesCard) {
+          fragment.appendChild(el('p', { style: 'color:#6b7b8d;text-align:center;padding:20px' }, 'No channels found for the selected categories.'));
+        }
+
+        cardsContainer.replaceChildren(fragment);
+        resultCard.scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        setStatus('generateStatus', 'error', err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Generate All Playlists';
+      setTimeout(() => { progressBar.classList.remove('active'); }, 1000);
+    }
+  </script>
+</body>
+</html>
