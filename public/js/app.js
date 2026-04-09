@@ -3,7 +3,7 @@
  */
 import { el, setStatus, buildInfoItem, show } from './dom.js';
 import * as api from './api.js';
-import { buildPlaylistCard } from './playlist.js';
+import { buildPlaylistCard, buildSeriesCard } from './playlist.js';
 
 let serverHostname = '';
 
@@ -138,7 +138,7 @@ async function generatePlaylists() {
 
     progressFill.style.width = '100%';
 
-    const total = (result.live?.count || 0) + (result.vod?.count || 0) + (result.series?.count || 0);
+    const total = (result.live?.count || 0) + (result.vod?.count || 0) + (result.series?.totalCount || 0);
     setStatus('generateStatus', 'success', 'Generated ' + total + ' total channels across all playlists!');
 
     show('resultCard');
@@ -149,7 +149,7 @@ async function generatePlaylists() {
     const cards = [
       buildPlaylistCard('live', 'Live TV', result.live, serverHostname, creds.username),
       buildPlaylistCard('vod', 'Movies', result.vod, serverHostname, creds.username),
-      buildPlaylistCard('series', 'Series', result.series, serverHostname, creds.username)
+      buildSeriesCard(result.series, serverHostname, creds.username)
     ];
 
     let hasCards = false;

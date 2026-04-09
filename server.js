@@ -167,7 +167,7 @@ app.post('/api/generate-playlists', async (req, res) => {
       result.vod = { playlist: m3u, count };
     } catch { result.vod = { playlist: '#EXTM3U\n', count: 0 }; }
 
-    // --- SERIES ---
+    // --- SERIES (per-show playlists) ---
     try {
       const categoriesRes = await axios.get(`${apiBase}&action=get_series_categories`, { timeout: 15000 });
       const categories = categoriesRes.data || [];
@@ -177,8 +177,9 @@ app.post('/api/generate-playlists', async (req, res) => {
       const seriesRes = await axios.get(`${apiBase}&action=get_series`, { timeout: 60000 });
       const seriesList = seriesRes.data || [];
 
-      let m3u = '#EXTM3U\n';
-      let count = 0;
+      const shows = []; // array of { name, group, playlist, episodeCount }
+      let totalCount = 0;
+
       for (const series of seriesList) {
         if (selectedCategories && selectedCategories.length > 0) {
           if (!selectedCategories.includes(String(series.category_id))) continue;
@@ -189,19 +190,25 @@ app.post('/api/generate-playlists', async (req, res) => {
         try {
           const infoRes = await axios.get(`${apiBase}&action=get_series_info&series_id=${series.series_id}`, { timeout: 15000 });
           const episodes = infoRes.data.episodes || {};
+          let showM3u = '#EXTM3U\n';
+          let epCount = 0;
           for (const [seasonNum, seasonEpisodes] of Object.entries(episodes)) {
             for (const ep of seasonEpisodes) {
               const epName = `${name} S${String(seasonNum).padStart(2, '0')}E${String(ep.episode_num).padStart(2, '0')} - ${ep.title || ''}`;
               const ext = ep.container_extension || 'mp4';
-              m3u += `#EXTINF:-1 tvg-name="${epName}" tvg-logo="${logo}" group-title="${group}",${epName}\n`;
-              m3u += `${baseUrl}/series/${u}/${p}/${ep.id}.${ext}\n`;
-              count++;
+              showM3u += `#EXTINF:-1 tvg-name="${epName}" tvg-logo="${logo}" group-title="${group}",${epName}\n`;
+              showM3u += `${baseUrl}/series/${u}/${p}/${ep.id}.${ext}\n`;
+              epCount++;
             }
+          }
+          if (epCount > 0) {
+            shows.push({ name, group, playlist: showM3u, episodeCount: epCount });
+            totalCount += epCount;
           }
         } catch { /* skip failed series */ }
       }
-      result.series = { playlist: m3u, count };
-    } catch { result.series = { playlist: '#EXTM3U\n', count: 0 }; }
+      result.series = { shows, totalCount };
+    } catch { result.series = { shows: [], totalCount: 0 }; }
 
     res.json(result);
   } catch (err) {
