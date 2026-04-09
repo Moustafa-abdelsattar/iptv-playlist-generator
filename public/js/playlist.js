@@ -1,9 +1,8 @@
 /**
- * Playlist module - download and display logic
+ * Playlist module - download, copy, and card rendering
  */
 import { el, setStatus } from './dom.js';
 
-/** Download a string as a file */
 export function downloadFile(content, filename) {
   const blob = new Blob([content], { type: 'audio/x-mpegurl' });
   const url = URL.createObjectURL(blob);
@@ -16,23 +15,26 @@ export function downloadFile(content, filename) {
   URL.revokeObjectURL(url);
 }
 
-/** Copy text to clipboard */
 export function copyToClipboard(text, label) {
   navigator.clipboard.writeText(text).then(() => {
-    setStatus('generateStatus', 'success', label + ' playlist copied!');
+    setStatus('generateStatus', 'success', label + ' playlist copied to clipboard!');
   });
 }
 
-/** Generate a descriptive filename */
 export function buildFilename(serverHostname, username, label) {
   const now = new Date();
   const date = now.getFullYear() + '-' +
     String(now.getMonth() + 1).padStart(2, '0') + '-' +
     String(now.getDate()).padStart(2, '0');
-  return serverHostname + '_' + username + '_' + label.replace(/\s+/g, '-') + '_' + date + '.m3u';
+  return 'StreamCast_' + serverHostname + '_' + username + '_' + label.replace(/\s+/g, '-') + '_' + date + '.m3u';
 }
 
-/** Build a single playlist result card */
+const downloadIcons = {
+  live: '\u25B6',   // play symbol
+  vod: '\u2B07',    // down arrow
+  series: '\u2B07'
+};
+
 export function buildPlaylistCard(type, label, data, serverHostname, username) {
   if (!data || data.count === 0) return null;
 
@@ -41,7 +43,7 @@ export function buildPlaylistCard(type, label, data, serverHostname, username) {
   const previewText = data.playlist.split('\n').slice(0, 20).join('\n') +
     (data.playlist.split('\n').length > 20 ? '\n...' : '');
 
-  const card = el('div', { className: 'playlist-card' }, [
+  const card = el('div', { className: 'playlist-card ' + type }, [
     // Header
     el('div', { className: 'playlist-card-header' }, [
       el('div', { className: 'playlist-card-title ' + type }, label),
@@ -65,7 +67,7 @@ export function buildPlaylistCard(type, label, data, serverHostname, username) {
       el('button', {
         className: 'btn-download ' + type,
         onclick: () => downloadFile(data.playlist, filename)
-      }, 'Download ' + label),
+      }, (downloadIcons[type] || '') + '  Download ' + label),
       el('button', {
         className: 'btn-copy',
         onclick: () => copyToClipboard(data.playlist, label)

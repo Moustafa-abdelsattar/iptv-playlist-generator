@@ -3,58 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV Playlist Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>StreamCast - IPTV Playlist Generator</title>
+  <meta name="description" content="Generate M3U playlists for your IPTV service. Separate Live TV, Movies, and Series playlists ready for VLC and any M3U-compatible player.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F4FA;</text></svg>">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>IPTV Playlist Generator</h1>
-      <p>Connect to your IPTV server and generate M3U playlists</p>
-    </div>
+  <!-- Ambient Background -->
+  <div class="ambient-bg">
+    <div class="ambient-blob"></div>
+    <div class="ambient-blob"></div>
+    <div class="ambient-blob"></div>
+  </div>
 
-    <!-- Connection -->
-    <div class="card">
-      <div class="card-title">Server Connection</div>
-      <div class="form-group">
-        <label>Server URL</label>
-        <input type="text" id="serverUrl" placeholder="http://yourserver.com:port">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Username</label>
-          <input type="text" id="username" placeholder="Enter username">
+  <div class="page-wrapper">
+    <div class="container">
+
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          IPTV Playlist Generator
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="password" placeholder="Enter password">
+        <h1>Your Channels.<br>Your Playlists.<br>Your Rules.</h1>
+        <p class="hero-subtitle">
+          Stop paying for bloated IPTV apps. Connect your server, generate clean M3U playlists,
+          and watch on any player you want.
+        </p>
+        <div class="hero-vlc">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Requires <strong>VLC Media Player</strong> or any M3U-compatible player to open playlists</span>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon live">&#9654;</div>
+          <div class="feature-title">Live TV</div>
+          <div class="feature-desc">All your live channels in one clean playlist</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon vod">&#127916;</div>
+          <div class="feature-title">Movies</div>
+          <div class="feature-desc">Separate VOD playlist with full catalog</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon series">&#127902;</div>
+          <div class="feature-title">Series</div>
+          <div class="feature-desc">Episodes organized by season and number</div>
         </div>
       </div>
-      <button class="btn btn-primary" id="connectBtn">Connect to Server</button>
-      <div id="connectStatus" class="status"></div>
-      <div id="serverInfo" class="server-info hidden"></div>
-    </div>
 
-    <!-- Options -->
-    <div class="card hidden" id="optionsCard">
-      <div class="card-title">Playlist Options</div>
-      <div class="cat-controls">
-        <button class="btn btn-secondary" id="selectAllBtn">Select All</button>
-        <button class="btn btn-secondary" id="deselectAllBtn">Deselect All</button>
-        <span class="cat-count" id="catCount"></span>
+      <!-- Connection Card -->
+      <div class="card">
+        <div class="card-title">Server Connection</div>
+        <div class="form-group">
+          <label>Server URL</label>
+          <input type="text" id="serverUrl" placeholder="http://yourserver.com:port">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="Enter username">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter password">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="connectBtn">Connect to Server</button>
+        <div id="connectStatus" class="status"></div>
+        <div id="serverInfo" class="server-info hidden"></div>
       </div>
-      <div class="categories-grid" id="categoriesGrid"></div>
-      <button class="btn btn-primary" id="generateBtn" style="margin-top: 20px;">Generate All Playlists</button>
-      <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
-      <div id="generateStatus" class="status"></div>
-    </div>
 
-    <!-- Results -->
-    <div class="card hidden" id="resultCard">
-      <div class="card-title">Your Playlists</div>
-      <div class="playlist-cards" id="playlistCards"></div>
+      <!-- Options Card -->
+      <div class="card hidden" id="optionsCard">
+        <div class="card-title">Playlist Options</div>
+        <div class="cat-controls">
+          <button class="btn btn-secondary" id="selectAllBtn">Select All</button>
+          <button class="btn btn-secondary" id="deselectAllBtn">Deselect All</button>
+          <span class="cat-count" id="catCount"></span>
+        </div>
+        <div class="categories-grid" id="categoriesGrid"></div>
+        <button class="btn btn-primary" id="generateBtn" style="margin-top: 20px;">Generate All Playlists</button>
+        <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+        <div id="generateStatus" class="status"></div>
+      </div>
+
+      <!-- Results Card -->
+      <div class="card hidden" id="resultCard">
+        <div class="card-title">Your Playlists</div>
+        <div class="playlist-cards" id="playlistCards"></div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>
+          StreamCast &mdash; IPTV Playlist Generator<br>
+          Open generated .m3u files with <a href="https://www.videolan.org/vlc/" target="_blank" rel="noopener">VLC Media Player</a>,
+          IPTV Smarters, TiviMate, or any M3U-compatible player.
+        </p>
+      </footer>
+
     </div>
   </div>
 
