@@ -29,12 +29,6 @@ export function buildFilename(serverHostname, username, label) {
   return 'StreamCast_' + serverHostname + '_' + username + '_' + label.replace(/\s+/g, '-') + '_' + date + '.m3u';
 }
 
-const downloadIcons = {
-  live: '\u25B6',   // play symbol
-  vod: '\u2B07',    // down arrow
-  series: '\u2B07'
-};
-
 export function buildPlaylistCard(type, label, data, serverHostname, username) {
   if (!data || data.count === 0) return null;
 
@@ -43,13 +37,11 @@ export function buildPlaylistCard(type, label, data, serverHostname, username) {
   const previewText = data.playlist.split('\n').slice(0, 20).join('\n') +
     (data.playlist.split('\n').length > 20 ? '\n...' : '');
 
-  const card = el('div', { className: 'playlist-card ' + type }, [
-    // Header
+  const card = el('div', { className: 'playlist-card' }, [
     el('div', { className: 'playlist-card-header' }, [
       el('div', { className: 'playlist-card-title ' + type }, label),
       el('span', { className: 'playlist-badge ' + type }, data.count + ' channels')
     ]),
-    // Stats
     el('div', { className: 'playlist-stats' }, [
       el('div', {}, [
         el('div', { className: 'playlist-stat-number' }, String(data.count)),
@@ -60,14 +52,12 @@ export function buildPlaylistCard(type, label, data, serverHostname, username) {
         el('div', { className: 'playlist-stat-label' }, 'File Size')
       ])
     ]),
-    // Filename
     el('div', { className: 'playlist-filename' }, filename),
-    // Actions
     el('div', { className: 'playlist-actions' }, [
       el('button', {
         className: 'btn-download ' + type,
         onclick: () => downloadFile(data.playlist, filename)
-      }, (downloadIcons[type] || '') + '  Download ' + label),
+      }, 'Download .m3u'),
       el('button', {
         className: 'btn-copy',
         onclick: () => copyToClipboard(data.playlist, label)
